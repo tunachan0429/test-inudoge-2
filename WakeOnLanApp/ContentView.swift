@@ -40,7 +40,6 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            // 最初のデバイスを自動選択してモニタリング開始
             if let first = store.devices.first {
                 selectedDevice = first
                 sshManager.startMonitoring(device: first)
@@ -57,8 +56,6 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - Empty State
-
     var emptyState: some View {
         VStack(spacing: 16) {
             Image(systemName: "desktopcomputer")
@@ -74,14 +71,11 @@ struct ContentView: View {
         .padding()
     }
 
-    // MARK: - Device List
-
     var deviceList: some View {
         List {
             ForEach(store.devices) { device in
                 VStack(spacing: 0) {
                     deviceRow(device)
-                    // 選択中のデバイスはコントロールパネルを展開表示
                     if selectedDevice?.id == device.id {
                         controlPanel(device)
                             .listRowInsets(EdgeInsets())
@@ -92,15 +86,12 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - Device Row
-
     func deviceRow(_ device: Device) -> some View {
         Button(action: {
             selectedDevice = device
             sshManager.startMonitoring(device: device)
         }) {
             HStack(spacing: 12) {
-                // ステータスインジケーター
                 if selectedDevice?.id == device.id {
                     statusDot
                 } else {
@@ -108,7 +99,6 @@ struct ContentView: View {
                         .fill(Color.gray.opacity(0.3))
                         .frame(width: 10, height: 10)
                 }
-
                 VStack(alignment: .leading, spacing: 3) {
                     Text(device.name)
                         .font(.headline)
@@ -122,9 +112,7 @@ struct ContentView: View {
                             .foregroundColor(.secondary)
                     }
                 }
-
                 Spacer()
-
                 Image(systemName: selectedDevice?.id == device.id ? "chevron.up" : "chevron.down")
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -133,8 +121,6 @@ struct ContentView: View {
         }
         .buttonStyle(.plain)
     }
-
-    // MARK: - Status Dot
 
     var statusDot: some View {
         ZStack {
@@ -151,13 +137,9 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - Control Panel
-
     func controlPanel(_ device: Device) -> some View {
         VStack(spacing: 0) {
             Divider()
-
-            // ステータスバー
             HStack {
                 statusDot
                 Text(statusLabel)
@@ -174,12 +156,8 @@ struct ContentView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .background(Color(.systemGroupedBackground))
-
             Divider()
-
-            // ボタン行
             HStack(spacing: 12) {
-                // 電源ON（WoL）
                 Button(action: { wake(device) }) {
                     Group {
                         if isWaking {
@@ -195,7 +173,6 @@ struct ContentView: View {
                 .tint(.green)
                 .disabled(isWaking || sshManager.status == .online)
 
-                // 電源OFF（SSH shutdown）
                 Button(action: { shutdown(device) }) {
                     Group {
                         if isShuttingDown {
@@ -215,12 +192,11 @@ struct ContentView: View {
             .padding(.vertical, 12)
             .background(Color(.systemGroupedBackground))
 
-            // SSH未設定の警告
-            if device.hostIP.isEmpty || device.sshPrivateKey.isEmpty {
+            if device.hostIP.isEmpty {
                 HStack {
                     Image(systemName: "exclamationmark.triangle")
                         .foregroundColor(.orange)
-                    Text("シャットダウンには HOST IP と PRIVATE KEY の設定が必要です")
+                    Text("シャットダウンには HOST IP の設定が必要です")
                         .font(.caption)
                         .foregroundColor(.orange)
                 }
@@ -230,8 +206,6 @@ struct ContentView: View {
             }
         }
     }
-
-    // MARK: - Status Text
 
     var statusLabel: String {
         switch sshManager.status {
@@ -250,8 +224,6 @@ struct ContentView: View {
         case .unknown: return .secondary
         }
     }
-
-    // MARK: - Actions
 
     private func wake(_ device: Device) {
         isWaking = true
