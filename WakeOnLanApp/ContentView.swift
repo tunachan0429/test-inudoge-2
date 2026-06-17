@@ -344,9 +344,9 @@ struct ContentView: View {
                 Color.white
                 Image(dogeImageName)
                     .resizable()
+                    .interpolation(.none) // pixel art
                     .scaledToFit()
                     .frame(width: 150, height: 150)
-                    .interpolation(.none) // pixel art
             }
             .frame(width: 160, height: 160)
             .border(Color.black, width: 3)
